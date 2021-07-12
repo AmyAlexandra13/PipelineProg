@@ -1,67 +1,133 @@
-<!DOCTYPE html>
-<html lang="en">
+<?php
+require_once 'estudiantes/estudiante.php';
+require_once 'helpers/utilities.php';
+require_once 'estudiantes/serviceSession.php';
+require_once 'estudiantes/ServiceCookies.php';
+require_once 'layout/layout.php';
 
-<head>
-	<meta charset="utf-8">
-	<title>PHP Application</title>
-	<link href="css/site.css" rel="stylesheet">
-</head>
+$layout = new Layout(true);
+$service = new ServiceCookies();
+$utilities = new Utilities();
 
-<body>
-<div class="main-container">
-        <div class="cloud-image">
-            <img src="img/successCloudNew.svg" alt="successCloudNew" />
-        </div>
-        <div class="content">
-            <div class="tweet-container">
-            <a href="http://twitter.com/intent/tweet/?text=I%20just%20created%20a%20new%20PHP%20website%20on%20Azure%20using%20Github%20Actions&hashtags=GithubActions%20%40Azure">
-                <img src="img/tweetThis.svg" alt="tweetThis" />
-            </a>
-        </div>
-            <div class="content-body">
-                <div class="success-text">Success!</div>
-                <div class="description line-1">
-				<?php
-				echo "Your Github Repository with Github Actions has been successfully setup";
-				?>
-				</div>
-                <div class="description line-2">
-				<?php
-				$appType = "PHP";
-				echo "Your $appType app is up and running on Azure";
-				?>
-				</div>
-                <div class="next-steps-container">
-                    <div class="next-steps-header">Next up</div>
-                    <div class="next-steps-body">
-                        <div class="step">
-                            <div class="step-icon">
-                                <img src="img/cloneWhite.svg" alt="cloneWhite" >
-                            </div>
-                            <div class="step-text"><a href="https://docs.github.com/en/github/creating-cloning-and-archiving-repositories/cloning-a-repository">Clone your code repository and start developing your application on IDE of your choice</a></div>
-                        </div>
-                        <div class="step">
-                            <div class="step-icon">
-                                <img src="img/deployWhite.svg" alt="deployWhite">
-                            </div>
-                            <div class="step-text"><a href="https://docs.github.com/en/actions">View your CI/CD pipeline on Github and customize it as per your needs</a></div>
-                        </div>
-                        <div class="step">
-                            <div class="step-icon">
-                                <img src="img/stackWhite.svg" alt="stackWhite">
-                            </div>
-                            <div class="step-text"><a href="http://portal.azure.com">View your service stack in the Azure Portal</a></div>
-                        </div>
-                        <div class="step">
-                            <div class="step-icon">
-                                <img src="img/lightbulbWhite.svg" alt="lightbulbWhite">
-                            </div>
-                            <div class="step-text"><a href="https://docs.github.com">Learn more about all you can do with Github by visiting the documentation</a></div>
-                        </div>
+$estudiantes = $service->GetList();
+
+
+?>
+
+<?php echo $layout->printHeader(); ?>
+
+<div class="row">
+    <div class="col-md-10"></div>
+    <div class="col-md-2">
+
+        <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#nuevo-heroe-modal">
+            Nuevo estudiante
+        </button>
+
+    </div>
+</div>
+
+<div class="row">
+
+    <?php if (count($estudiantes) == 0) : ?>
+
+        <h2>No hay estudiantes registrados</h2>
+
+    <?php else : ?>
+
+        <?php foreach ($estudiantes as $item => $estu) : ?>
+
+            <div class="col-md-3">
+
+                <div class="card">
+
+                    <div class="card-body">
+                        <h5 class="card-title"><?= $estu->Nombre ?></h5>
+                        <p class="card-text"><?= $estu->Apellido ?></p>
+                        <p class="card-text"><strong><?php echo $utilities->carreras[$estu->Carrera ] ?></strong></p>
+
+                        <p class="card-text">
+
+                        <strong>
+
+                        <?php if($estu->Status): ?>
+
+                            <span class="text-success">Activo</span>
+
+                        <?php else :?>
+
+                            <span class="text-danger">Inactivo</span>
+
+                        <?php endif;?>
+
+                        </strong>
+
+                        </p>
+
+                    </div>
+
+                    <div class="card-body">
+                        <a href="estudiantes/edit.php?id=<?= $estu->Id ?>" class="btn btn-primary">Editar</a>
+                        <a href="#" data-id="<?= $estu->Id ?>" class="btn btn-danger btn-delete">Eliminar</a>
                     </div>
                 </div>
+
+            </div>
+
+        <?php endforeach; ?>
+
+
+
+    <?php endif; ?>
+
+
+
+</div>
+
+<div class="modal fade" id="nuevo-heroe-modal" tabindex="-1" aria-labelledby="nuevoHeroeLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="nuevoHeroeLabel">Nuevo estudiante</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+
+                <form action="estudiantes/add.php" method="POST">
+                    <div class="mb-3">
+                        <label for="estudiante-name" class="form-label">Nombre del estudiante</label>
+                        <input name="EstudianteName" type="text" class="form-control" id="estudiante-name">
+
+                    </div>
+                    <div class="mb-3">
+                        <label for="estudiante-apellido" class="form-label">Apellido del estudiante</label>
+                        <input name="EstudianteApellido" type="text" class="form-control" id="estudiante-apellido">
+                    </div>
+                    <div class="mb-3">
+                        <label for="estudiante-carrera" class="form-label">Carrera del estudiante</label>
+                        <select name="EstudianteCarrera" class="form-select" id="estudiante-carrera">
+                            <option value="">Seleccione una opcion</option>
+                            <?php foreach ($utilities->carreras as $valor => $texto) : ?>
+
+                                <option value="<?php echo $valor; ?>"> <?= $texto ?> </option>
+
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+
+
+
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                <button type="submit" class="btn btn-primary">Guardar</button>
+                </form>
             </div>
         </div>
     </div>
-</body>
-</html>
+</div>
+
+<?php echo $layout->printFooter(); ?>
+
+<script src="assets/js/site/index/index.js"></script>
+
